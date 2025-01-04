@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,8 +15,10 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, msg := range msgs {
-		fmt.Fprintf(w, "задача номер: %d, Task=%s, Is_done=%v\n", i, msg.Task, msg.IsDone)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(msgs); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -33,7 +35,13 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Добавлена задача: Task=%s, Is_done=%v\n", msg.Task, msg.IsDone)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(msg); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func PatchHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +68,11 @@ func PatchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Задача с id=%s обновлена: Task=%s, Is_done=%v\n", idStr, msg.Task, msg.IsDone)
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(msg); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func DeleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,5 +90,5 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Задача с id=%s успешна удалена", idStr)
+	w.WriteHeader(http.StatusNoContent)
 }
