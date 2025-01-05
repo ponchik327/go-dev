@@ -1,17 +1,63 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"project/internal/taskService"
+	"project/internal/web/tasks"
 
 	"github.com/gorilla/mux"
 )
 
 type Handler struct {
 	service *taskService.TaskService
+}
+
+// GetTasks implements tasks.StrictServerInterface.
+func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
+	allTasks, err := h.service.GetAllTasks()
+	if err != nil {
+		return nil, err
+	}
+
+	response := tasks.GetTasks200JSONResponse{}
+
+	for _, tsk := range allTasks {
+		task := tasks.Task{
+			Id:     &tsk.ID,
+			Text:   &tsk.Text,
+			IsDone: &tsk.IsDone,
+		}
+		response = append(response, task)
+	}
+
+	return response, nil
+}
+
+// PostTasks implements tasks.StrictServerInterface.
+func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
+	taskRequest := request.Body
+
+	taskToCreate := taskService.Task{
+		Text:   *taskRequest.Text,
+		IsDone: *taskRequest.IsDone,
+	}
+
+	createdTask, err := h.service.CreateTask(taskToCreate)
+	if err != nil {
+		return nil, err
+	}
+
+	response := tasks.PostTasks201JSONResponse{
+		Id:     &createdTask.ID,
+		Text:   &createdTask.Text,
+		IsDone: &createdTask.IsDone,
+	}
+
+	return response, nil
 }
 
 func NewHandler(service *taskService.TaskService) *Handler {
