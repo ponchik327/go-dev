@@ -2,18 +2,17 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
-	"strconv"
 
 	"project/internal/taskService"
 	"project/internal/web/tasks"
-
-	"github.com/gorilla/mux"
 )
 
 type Handler struct {
 	service *taskService.TaskService
+}
+
+func NewHandler(service *taskService.TaskService) *Handler {
+	return &Handler{service: service}
 }
 
 // GetTasks implements tasks.StrictServerInterface.
@@ -60,91 +59,37 @@ func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestO
 	return response, nil
 }
 
-func NewHandler(service *taskService.TaskService) *Handler {
-	return &Handler{service: service}
+// PatchTasksID implements tasks.StrictServerInterface.
+func (h *Handler) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRequestObject) (tasks.PatchTasksIDResponseObject, error) {
+	taskRequest := request.Body
+
+	taskToUpdate := taskService.Task{
+		Text:   *taskRequest.Text,
+		IsDone: *taskRequest.IsDone,
+	}
+
+	updatedTask, err := h.service.UpdateTaskByID(request.ID, taskToUpdate)
+	if err != nil {
+		return nil, err
+	}
+
+	response := tasks.PatchTasksID200JSONResponse{
+		Id:     &updatedTask.ID,
+		Text:   &updatedTask.Text,
+		IsDone: &updatedTask.IsDone,
+	}
+
+	return response, nil
 }
 
-func (h *Handler) GetTaskHandler(w http.ResponseWriter, r *http.Request) {
-	tasks, err := h.service.GetAllTasks()
+// DeleteTasksID implements tasks.StrictServerInterface.
+func (h *Handler) DeleteTasksID(ctx context.Context, request tasks.DeleteTasksIDRequestObject) (tasks.DeleteTasksIDResponseObject, error) {
+	err := h.service.DeleteTaskByID(request.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(tasks)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *Handler) PostTaskHandler(w http.ResponseWriter, r *http.Request) {
-	var task taskService.Task
-	err := json.NewDecoder(r.Body).Decode(&task)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	createdTask, err := h.service.CreateTask(task)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	response := tasks.DeleteTasksID204Response{}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(createdTask)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func (h *Handler) PatchTaskHandler(w http.ResponseWriter, r *http.Request) {
-	var task taskService.Task
-	err := json.NewDecoder(r.Body).Decode(&task)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	updateTask, err := h.service.UpdateTaskByID(uint(id), task)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(updateTask)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func (h *Handler) DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = h.service.DeleteTaskByID(uint(id))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	return response, nil
 }

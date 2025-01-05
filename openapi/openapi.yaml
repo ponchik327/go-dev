@@ -2,6 +2,9 @@ openapi: 3.0.0
 info:
   title: API
   version: 1.0.0
+servers:
+  - url: localhost:8080/api
+    description: Sandbox server (uses test data)
 paths:
   /tasks:
     get:
@@ -35,6 +38,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
+  /tasks/{ID}:              
+    patch:
+      summary: Update task by ID
+      tags:
+        - tasks
+      parameters:
+        - name: ID
+          in: path
+          schema:
+            type: integer 
+            format: uint 
+          required: true
+          description: The ID of the task to update
+      requestBody:
+        description: The task to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: The updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task' 
+    delete:
+      summary: Delete task by ID
+      tags:
+        - tasks
+      parameters:
+        - name: ID
+          in: path
+          schema:
+            type: integer 
+            format: uint
+          required: true
+          description: The ID of the task to delete
+      responses:
+        '204':  
+          description: Task deleted successfully
               
 components:
   schemas:

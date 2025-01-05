@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
@@ -23,6 +24,9 @@ type Task struct {
 // PostTasksJSONRequestBody defines body for PostTasks for application/json ContentType.
 type PostTasksJSONRequestBody = Task
 
+// PatchTasksIDJSONRequestBody defines body for PatchTasksID for application/json ContentType.
+type PatchTasksIDJSONRequestBody = Task
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Get all tasks
@@ -31,6 +35,12 @@ type ServerInterface interface {
 	// Create a new task
 	// (POST /tasks)
 	PostTasks(ctx echo.Context) error
+	// Delete task by ID
+	// (DELETE /tasks/{ID})
+	DeleteTasksID(ctx echo.Context, iD uint) error
+	// Update task by ID
+	// (PATCH /tasks/{ID})
+	PatchTasksID(ctx echo.Context, iD uint) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -53,6 +63,38 @@ func (w *ServerInterfaceWrapper) PostTasks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostTasks(ctx)
+	return err
+}
+
+// DeleteTasksID converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteTasksID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "ID" -------------
+	var iD uint
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ID", runtime.ParamLocationPath, ctx.Param("ID"), &iD)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter ID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteTasksID(ctx, iD)
+	return err
+}
+
+// PatchTasksID converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchTasksID(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "ID" -------------
+	var iD uint
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "ID", runtime.ParamLocationPath, ctx.Param("ID"), &iD)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter ID: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchTasksID(ctx, iD)
 	return err
 }
 
@@ -86,6 +128,8 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/tasks", wrapper.GetTasks)
 	router.POST(baseURL+"/tasks", wrapper.PostTasks)
+	router.DELETE(baseURL+"/tasks/:ID", wrapper.DeleteTasksID)
+	router.PATCH(baseURL+"/tasks/:ID", wrapper.PatchTasksID)
 
 }
 
@@ -122,6 +166,40 @@ func (response PostTasks201JSONResponse) VisitPostTasksResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteTasksIDRequestObject struct {
+	ID uint `json:"ID"`
+}
+
+type DeleteTasksIDResponseObject interface {
+	VisitDeleteTasksIDResponse(w http.ResponseWriter) error
+}
+
+type DeleteTasksID204Response struct {
+}
+
+func (response DeleteTasksID204Response) VisitDeleteTasksIDResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type PatchTasksIDRequestObject struct {
+	ID   uint `json:"ID"`
+	Body *PatchTasksIDJSONRequestBody
+}
+
+type PatchTasksIDResponseObject interface {
+	VisitPatchTasksIDResponse(w http.ResponseWriter) error
+}
+
+type PatchTasksID200JSONResponse Task
+
+func (response PatchTasksID200JSONResponse) VisitPatchTasksIDResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Get all tasks
@@ -130,6 +208,12 @@ type StrictServerInterface interface {
 	// Create a new task
 	// (POST /tasks)
 	PostTasks(ctx context.Context, request PostTasksRequestObject) (PostTasksResponseObject, error)
+	// Delete task by ID
+	// (DELETE /tasks/{ID})
+	DeleteTasksID(ctx context.Context, request DeleteTasksIDRequestObject) (DeleteTasksIDResponseObject, error)
+	// Update task by ID
+	// (PATCH /tasks/{ID})
+	PatchTasksID(ctx context.Context, request PatchTasksIDRequestObject) (PatchTasksIDResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -190,6 +274,62 @@ func (sh *strictHandler) PostTasks(ctx echo.Context) error {
 		return err
 	} else if validResponse, ok := response.(PostTasksResponseObject); ok {
 		return validResponse.VisitPostTasksResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// DeleteTasksID operation middleware
+func (sh *strictHandler) DeleteTasksID(ctx echo.Context, iD uint) error {
+	var request DeleteTasksIDRequestObject
+
+	request.ID = iD
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTasksID(ctx.Request().Context(), request.(DeleteTasksIDRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteTasksID")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(DeleteTasksIDResponseObject); ok {
+		return validResponse.VisitDeleteTasksIDResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PatchTasksID operation middleware
+func (sh *strictHandler) PatchTasksID(ctx echo.Context, iD uint) error {
+	var request PatchTasksIDRequestObject
+
+	request.ID = iD
+
+	var body PatchTasksIDJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchTasksID(ctx.Request().Context(), request.(PatchTasksIDRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchTasksID")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PatchTasksIDResponseObject); ok {
+		return validResponse.VisitPatchTasksIDResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}

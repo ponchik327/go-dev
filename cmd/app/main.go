@@ -27,9 +27,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	baseURL := e.Group("/api")
+
 	// Прикол для работы в echo. Передаем и регистрируем хендлер в echo
 	strictHandler := tasks.NewStrictHandler(handler, nil)
-	tasks.RegisterHandlers(e, strictHandler)
+	tasks.RegisterHandlers(baseURL, strictHandler)
 
 	if err := e.Start(":8080"); err != nil {
 		log.Fatalf("failed to start with err: %v", err)
