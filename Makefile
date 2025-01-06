@@ -24,8 +24,11 @@ migrate-force:
 run:
 	go run cmd/app/main.go
 
-gen:
+gen-tasks:
 	oapi-codegen -config openapi/.openapi -include-tags tasks -package tasks openapi/openapi.yaml > ./internal/web/tasks/api.gen.go
+
+gen-users:
+	oapi-codegen -config openapi/.openapi -include-tags users -package users openapi/openapi.yaml > ./internal/web/users/api.gen.go
 
 lint:
 	golangci-lint config -c linter/.golangci.yaml > /dev/null
