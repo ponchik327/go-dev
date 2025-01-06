@@ -89,7 +89,7 @@ components:
         id:
           type: integer
           format: uint 
-        text:
+        content:
           type: string
         is_done:
           type: boolean

@@ -7,14 +7,19 @@ import (
 	"gorm.io/gorm"
 )
 
-// переменная, через которую мы будем работать с БД
-var DB *gorm.DB
+type DB struct {
+	Db *gorm.DB
+}
 
-func InitDB() {
+func NewDB() *DB {
+	return &DB{}
+}
+
+func (db *DB) InitDB() {
 	// в dsn вводим данные, которые мы указали при создании контейнера
 	dsn := "host=localhost user=postgres password=12345678 dbname=postgres port=5432 sslmode=disable"
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db.Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database: ", err)
 	}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"project/internal/taskService"
 	"project/internal/web/tasks"
@@ -19,16 +20,16 @@ func NewHandler(service *taskService.TaskService) *Handler {
 func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	allTasks, err := h.service.GetAllTasks()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("не удалось найти все задачи: %w", err)
 	}
 
 	response := tasks.GetTasks200JSONResponse{}
 
 	for _, tsk := range allTasks {
 		task := tasks.Task{
-			Id:     &tsk.ID,
-			Text:   &tsk.Text,
-			IsDone: &tsk.IsDone,
+			Id:      &tsk.ID,
+			Content: &tsk.Content,
+			IsDone:  &tsk.IsDone,
 		}
 		response = append(response, task)
 	}
@@ -41,19 +42,19 @@ func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestO
 	taskRequest := request.Body
 
 	taskToCreate := taskService.Task{
-		Text:   *taskRequest.Text,
-		IsDone: *taskRequest.IsDone,
+		Content: *taskRequest.Content,
+		IsDone:  *taskRequest.IsDone,
 	}
 
 	createdTask, err := h.service.CreateTask(taskToCreate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("не удалось создать задачу: %w", err)
 	}
 
 	response := tasks.PostTasks201JSONResponse{
-		Id:     &createdTask.ID,
-		Text:   &createdTask.Text,
-		IsDone: &createdTask.IsDone,
+		Id:      &createdTask.ID,
+		Content: &createdTask.Content,
+		IsDone:  &createdTask.IsDone,
 	}
 
 	return response, nil
@@ -64,19 +65,19 @@ func (h *Handler) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRe
 	taskRequest := request.Body
 
 	taskToUpdate := taskService.Task{
-		Text:   *taskRequest.Text,
-		IsDone: *taskRequest.IsDone,
+		Content: *taskRequest.Content,
+		IsDone:  *taskRequest.IsDone,
 	}
 
 	updatedTask, err := h.service.UpdateTaskByID(request.ID, taskToUpdate)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("не удалось обновить задачу: %w", err)
 	}
 
 	response := tasks.PatchTasksID200JSONResponse{
-		Id:     &updatedTask.ID,
-		Text:   &updatedTask.Text,
-		IsDone: &updatedTask.IsDone,
+		Id:      &updatedTask.ID,
+		Content: &updatedTask.Content,
+		IsDone:  &updatedTask.IsDone,
 	}
 
 	return response, nil
@@ -86,7 +87,7 @@ func (h *Handler) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRe
 func (h *Handler) DeleteTasksID(ctx context.Context, request tasks.DeleteTasksIDRequestObject) (tasks.DeleteTasksIDResponseObject, error) {
 	err := h.service.DeleteTaskByID(request.ID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("не удалось удалить задачу: %w", err)
 	}
 
 	response := tasks.DeleteTasksID204Response{}

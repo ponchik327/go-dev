@@ -1,0 +1,17 @@
+linters:
+  enable-all: true
+  disable:
+    - exportloopref
+    - revive
+    - depguard
+    - gci
+    - ireturn
+    - stylecheck
+    - exhaustruct
+    - lll
+    - wsl
+    - gofumpt
+    - tagliatelle
+
+exclude-dirs:
+  - internal/web/tasks  

@@ -27,12 +27,14 @@ func NewTaskRepository(db *gorm.DB) *taskRepository {
 
 func (r *taskRepository) CreateTask(task Task) (Task, error) {
 	err := r.db.Create(&task).Error
+
 	return task, err
 }
 
 func (r *taskRepository) GetAllTasks() ([]Task, error) {
 	var tasks []Task
 	err := r.db.Find(&tasks).Error
+
 	return tasks, err
 }
 
@@ -43,7 +45,7 @@ func (r *taskRepository) UpdateTaskByID(id uint, newTask Task) (Task, error) {
 		return Task{}, err
 	}
 
-	task.Text = newTask.Text
+	task.Content = newTask.Content
 	task.IsDone = newTask.IsDone
 
 	err = r.db.Save(&task).Error
