@@ -10,12 +10,16 @@ migrate-new:
 
 # Применение миграций
 migrate:
-	$(MIGRATE) up
+	$(MIGRATE) up ${COUNT}
 
 # Откат миграций
 migrate-down:
-	$(MIGRATE) down
+	$(MIGRATE) down ${COUNT}
 	
+# Принудительно устанавливает нужную версию
+migrate-force:
+	$(MIGRATE) force ${VERSION}
+
 # для удобства добавим команду run, которая будет запускать наше приложение
 run:
 	go run cmd/app/main.go
