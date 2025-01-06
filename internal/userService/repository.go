@@ -3,7 +3,7 @@ package userService
 import "gorm.io/gorm"
 
 type UserRepository interface {
-	CreateUser(user User) error
+	CreateUser(user User) (User, error)
 	GetAllUsers() ([]User, error)
 	UpdateUserByID(id uint, user User) (User, error)
 	DeleteUserByID(id uint) error
@@ -17,10 +17,10 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(user User) error {
+func (r *userRepository) CreateUser(user User) (User, error) {
 	err := r.db.Create(&user).Error
 
-	return err
+	return user, err
 }
 
 func (r *userRepository) GetAllUsers() ([]User, error) {

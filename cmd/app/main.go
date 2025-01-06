@@ -6,7 +6,9 @@ import (
 	"project/internal/database"
 	"project/internal/handlers"
 	"project/internal/taskService"
+	"project/internal/userService"
 	"project/internal/web/tasks"
+	"project/internal/web/users"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -16,10 +18,13 @@ func main() {
 	db := database.NewDB()
 	db.InitDB()
 
-	repository := taskService.NewTaskRepository(db.Db)
-	service := taskService.NewTaskService(repository)
+	// Инициализируем сервис задач
+	tasksRepository := taskService.NewTaskRepository(db.Db)
+	tasksService := taskService.NewTaskService(tasksRepository)
 
-	handler := handlers.NewHandler(service)
+	// Инициализируем сервис пользователей
+	usersRepository := userService.NewUserRepository(db.Db)
+	usersService := userService.NewUserService(usersRepository)
 
 	// Инициализируем echo
 	server := echo.New()
@@ -30,9 +35,15 @@ func main() {
 
 	baseURL := server.Group("/api")
 
-	// Прикол для работы в echo. Передаем и регистрируем хендлер в echo
-	strictHandler := tasks.NewStrictHandler(handler, nil)
-	tasks.RegisterHandlers(baseURL, strictHandler)
+	// Передаем и регистрируем хендлеры для сервиса задач в echo
+	tasksHandlers := handlers.NewTaskHandlers(tasksService)
+	taskStrictHandler := tasks.NewStrictHandler(tasksHandlers, nil)
+	tasks.RegisterHandlers(baseURL, taskStrictHandler)
+
+	// Передаем и регистрируем хендлеры для сервиса пользователей в echo
+	usersHandlers := handlers.NewUserHandlers(usersService)
+	userStrictHandler := users.NewStrictHandler(usersHandlers, nil)
+	users.RegisterHandlers(baseURL, userStrictHandler)
 
 	err := server.Start(":8080")
 	if err != nil {

@@ -120,26 +120,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-    /users/{ID}:
-      patch:
-        summary: Update user by ID
-        tags:
-          - users
-        parameters:
-          - name: ID
-            in: path
-            schema:
-              type: integer 
-              format: uint 
-            required: true
-            description: The ID of the user to update
-        requestBody:
-          description: The user to update
+  /users/{ID}:
+    patch:
+      summary: Update user by ID
+      tags:
+        - users
+      parameters:
+        - name: ID
+          in: path
+          schema:
+            type: integer 
+            format: uint 
           required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
+          description: The ID of the user to update
+      requestBody:
+        description: The user to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
       responses:
         '200':
           description: The updated user
@@ -147,21 +147,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-      delete:
-        summary: Delete user by ID
-        tags:
-          - users
-        parameters:
-          - name: ID
-            in: path
-            schema:
-              type: integer 
-              format: uint
-            required: true
-            description: The ID of the user to delete
-        responses:
-          '204':  
-            description: User deleted successfully          
+    delete:
+      summary: Delete user by ID
+      tags:
+        - users
+      parameters:
+        - name: ID
+          in: path
+          schema:
+            type: integer 
+            format: uint
+          required: true
+          description: The ID of the user to delete
+      responses:
+        '204':  
+          description: User deleted successfully
 
 
 ####################################################

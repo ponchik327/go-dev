@@ -8,16 +8,16 @@ import (
 	"project/internal/web/tasks"
 )
 
-type Handler struct {
+type taskHandlers struct {
 	service *taskService.TaskService
 }
 
-func NewHandler(service *taskService.TaskService) *Handler {
-	return &Handler{service: service}
+func NewTaskHandlers(service *taskService.TaskService) *taskHandlers {
+	return &taskHandlers{service: service}
 }
 
 // GetTasks implements tasks.StrictServerInterface.
-func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
+func (h *taskHandlers) GetTasks(ctx context.Context, request tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	allTasks, err := h.service.GetAllTasks()
 	if err != nil {
 		return nil, fmt.Errorf("не удалось найти все задачи: %w", err)
@@ -38,7 +38,7 @@ func (h *Handler) GetTasks(ctx context.Context, request tasks.GetTasksRequestObj
 }
 
 // PostTasks implements tasks.StrictServerInterface.
-func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
+func (h *taskHandlers) PostTasks(ctx context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	taskRequest := request.Body
 
 	taskToCreate := taskService.Task{
@@ -61,7 +61,7 @@ func (h *Handler) PostTasks(ctx context.Context, request tasks.PostTasksRequestO
 }
 
 // PatchTasksID implements tasks.StrictServerInterface.
-func (h *Handler) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRequestObject) (tasks.PatchTasksIDResponseObject, error) {
+func (h *taskHandlers) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRequestObject) (tasks.PatchTasksIDResponseObject, error) {
 	taskRequest := request.Body
 
 	taskToUpdate := taskService.Task{
@@ -84,7 +84,7 @@ func (h *Handler) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRe
 }
 
 // DeleteTasksID implements tasks.StrictServerInterface.
-func (h *Handler) DeleteTasksID(ctx context.Context, request tasks.DeleteTasksIDRequestObject) (tasks.DeleteTasksIDResponseObject, error) {
+func (h *taskHandlers) DeleteTasksID(ctx context.Context, request tasks.DeleteTasksIDRequestObject) (tasks.DeleteTasksIDResponseObject, error) {
 	err := h.service.DeleteTaskByID(request.ID)
 	if err != nil {
 		return nil, fmt.Errorf("не удалось удалить задачу: %w", err)
