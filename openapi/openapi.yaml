@@ -161,6 +161,7 @@ paths:
       responses:
         '204':  
           description: User deleted successfully
+  /users/{ID}/tasks:        
     get:
       summary: Get all tasks some user by userID      
       tags:
@@ -181,8 +182,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Task' 
-
+                  $ref: '#/components/schemas/Task'
 
 ####################################################
 ############ дополнительные структуры ##############    

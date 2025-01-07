@@ -95,14 +95,14 @@ func (u *userHandlers) DeleteUsersID(ctx context.Context, request users.DeleteUs
 	return response, nil
 }
 
-// GetUsersID implements users.StrictServerInterface.
-func (u *userHandlers) GetUsersID(ctx context.Context, request users.GetUsersIDRequestObject) (users.GetUsersIDResponseObject, error) {
+// GetUsersIDTasks implements users.StrictServerInterface.
+func (u *userHandlers) GetUsersIDTasks(ctx context.Context, request users.GetUsersIDTasksRequestObject) (users.GetUsersIDTasksResponseObject, error) {
 	userTasks, err := u.service.GetTasksByUserID(request.ID)
 	if err != nil {
 		return nil, fmt.Errorf("не удалось найти задачи пользователя: %w", err)
 	}
 
-	response := users.GetUsersID200JSONResponse{}
+	response := users.GetUsersIDTasks200JSONResponse{}
 
 	for _, tsk := range userTasks {
 		task := users.Task{
