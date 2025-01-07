@@ -109,7 +109,6 @@ func (u *userHandlers) GetUsersID(ctx context.Context, request users.GetUsersIDR
 			Id:      &tsk.ID,
 			Content: &tsk.Content,
 			IsDone:  &tsk.IsDone,
-			UserId:  &tsk.UserID,
 		}
 		response = append(response, task)
 	}
