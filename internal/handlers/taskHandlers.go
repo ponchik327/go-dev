@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"project/internal/models"
 	"project/internal/taskService"
 	"project/internal/web/tasks"
 )
@@ -30,6 +31,7 @@ func (h *taskHandlers) GetTasks(ctx context.Context, request tasks.GetTasksReque
 			Id:      &tsk.ID,
 			Content: &tsk.Content,
 			IsDone:  &tsk.IsDone,
+			UserId:  &tsk.UserID,
 		}
 		response = append(response, task)
 	}
@@ -41,9 +43,10 @@ func (h *taskHandlers) GetTasks(ctx context.Context, request tasks.GetTasksReque
 func (h *taskHandlers) PostTasks(ctx context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	taskRequest := request.Body
 
-	taskToCreate := taskService.Task{
+	taskToCreate := models.Task{
 		Content: *taskRequest.Content,
 		IsDone:  *taskRequest.IsDone,
+		UserID:  *taskRequest.UserId,
 	}
 
 	createdTask, err := h.service.CreateTask(taskToCreate)
@@ -55,6 +58,7 @@ func (h *taskHandlers) PostTasks(ctx context.Context, request tasks.PostTasksReq
 		Id:      &createdTask.ID,
 		Content: &createdTask.Content,
 		IsDone:  &createdTask.IsDone,
+		UserId:  &createdTask.UserID,
 	}
 
 	return response, nil
@@ -64,7 +68,7 @@ func (h *taskHandlers) PostTasks(ctx context.Context, request tasks.PostTasksReq
 func (h *taskHandlers) PatchTasksID(ctx context.Context, request tasks.PatchTasksIDRequestObject) (tasks.PatchTasksIDResponseObject, error) {
 	taskRequest := request.Body
 
-	taskToUpdate := taskService.Task{
+	taskToUpdate := models.Task{
 		Content: *taskRequest.Content,
 		IsDone:  *taskRequest.IsDone,
 	}

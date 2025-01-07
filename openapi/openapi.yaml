@@ -6,7 +6,6 @@ servers:
   - url: localhost:8080/api
     description: Sandbox server (uses test data)
 paths:
-
 ####################################################
 ################# crud для задач ###################   
 #################################################### 
@@ -23,7 +22,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Task'
+                  $ref: '#/components/schemas/Task' 
     post:
       summary: Create a new task
       tags:
@@ -162,6 +161,27 @@ paths:
       responses:
         '204':  
           description: User deleted successfully
+    get:
+      summary: Get all tasks some user by userID      
+      tags:
+       - users
+      parameters:
+        - name: ID
+          in: path
+          schema:
+            type: integer 
+            format: uint
+          required: true
+          description: The ID of the user to get all tasks
+      responses:
+        '200':
+          description: A list of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task' 
 
 
 ####################################################
@@ -180,6 +200,9 @@ components:
           type: string
         is_done:
           type: boolean
+        user_id:
+          type: integer
+          format: uint  
     # пользователь
     User:
       type: object

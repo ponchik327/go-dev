@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"project/internal/models"
 	"project/internal/userService"
 	"project/internal/web/users"
 )
@@ -40,7 +41,7 @@ func (u *userHandlers) GetUsers(ctx context.Context, request users.GetUsersReque
 func (u *userHandlers) PostUsers(ctx context.Context, request users.PostUsersRequestObject) (users.PostUsersResponseObject, error) {
 	userRequest := request.Body
 
-	userToCreate := userService.User{
+	userToCreate := models.User{
 		Email:        *userRequest.Email,
 		PasswordHash: *userRequest.PasswordHash,
 	}
@@ -63,7 +64,7 @@ func (u *userHandlers) PostUsers(ctx context.Context, request users.PostUsersReq
 func (u *userHandlers) PatchUsersID(ctx context.Context, request users.PatchUsersIDRequestObject) (users.PatchUsersIDResponseObject, error) {
 	userRequest := request.Body
 
-	userToUpdate := userService.User{
+	userToUpdate := models.User{
 		Email:        *userRequest.Email,
 		PasswordHash: *userRequest.Email,
 	}
@@ -90,6 +91,28 @@ func (u *userHandlers) DeleteUsersID(ctx context.Context, request users.DeleteUs
 	}
 
 	response := users.DeleteUsersID204Response{}
+
+	return response, nil
+}
+
+// GetUsersID implements users.StrictServerInterface.
+func (u *userHandlers) GetUsersID(ctx context.Context, request users.GetUsersIDRequestObject) (users.GetUsersIDResponseObject, error) {
+	userTasks, err := u.service.GetTasksByUserID(request.ID)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось найти задачи пользователя: %w", err)
+	}
+
+	response := users.GetUsersID200JSONResponse{}
+
+	for _, tsk := range userTasks {
+		task := users.Task{
+			Id:      &tsk.ID,
+			Content: &tsk.Content,
+			IsDone:  &tsk.IsDone,
+			UserId:  &tsk.UserID,
+		}
+		response = append(response, task)
+	}
 
 	return response, nil
 }
